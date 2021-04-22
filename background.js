@@ -25,6 +25,21 @@ resetTabShift = function() {
 }
 
 
+saveTabSet = function() {
+    chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, (results) => {
+        chrome.storage.sync.set({tabset:results}, function() {})
+    })
+}
+
+launchTabSet = function() {
+    chrome.storage.sync.get(['tabset'], (result) => {
+        result.tabset.forEach(function(item, idx, arr){
+            chrome.tabs.create({url: item.url}, ()=>{})
+        })
+    })
+}
+
+
 chrome.tabs.onActivated.addListener((activeInfo) => {
     if(!tabShiftActive){
         activeTabIdx = tabsMruOrder.indexOf(activeInfo.tabId)
@@ -71,9 +86,19 @@ chrome.runtime.onMessage.addListener(
             }    
         }
 
+        if(request.route == 'SAVE_TAB_SET') {
+            saveTabSet()
+        }
+
+        if(request.route == 'LAUNCH_TAB_SET') {
+            launchTabSet()
+        }
+
         // chrome.extension.getBackgroundPage().console.log(tabsMruOrder.toString())
     }
 )
+
+
 
 
 
